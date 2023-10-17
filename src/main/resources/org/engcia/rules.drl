@@ -1,0 +1,52 @@
+/*
+ * Copyright 2015 Red Hat, Inc. and/or its affiliates.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+*/
+
+package org.engcia;
+
+import org.engcia.model.Evidence;
+import org.engcia.model.Hypothesis;
+import org.engcia.model.Conclusion;
+import org.engcia.model.Fact;
+
+import function org.engcia.view.UI.answer
+import function org.engcia.view.UI.getOriginCountry
+import function org.engcia.view.UI.getDestinationCountry
+import function org.engcia.view.UI.getDestinationState
+
+import org.engcia.model.TransportationLane
+import org.engcia.model.LogisticPoint
+import org.engcia.model.ServiceLevelType
+import org.engcia.model.TradeLane;
+
+query "Conclusions"
+	$conclusion : Conclusion()
+end
+
+rule "r1"
+	when
+        eval(answer(Evidence.ORIGIN_COUNTRY, "Espanha,Belgica,Italia,França")) and
+		eval(answer(Evidence.DESTINATION_COUNTRY, "China" )) and
+        eval(answer(Evidence.DESTINATION_STATE, "Beijing,Hebei,Shandong"))
+	then
+		Conclusion c = new Conclusion(new TradeLane(new TransportationLane[]{
+                new TransportationLane(getOriginCountry(), new LogisticPoint("HongKong"), "UPS", ServiceLevelType.Express),
+                new TransportationLane(new LogisticPoint("HongKong"), getDestinationState(), "SFExpress", ServiceLevelType.Express) }));
+		insert(c);
+end
+
+query "evidence"(String ev, String v)
+	e : Evidence( evidence == ev, value == v )
+end
+
